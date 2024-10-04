@@ -142,8 +142,115 @@ With this I found a robots.txt file, which turned out to be a wordpress login pa
 After I run WPScan to check for wordpress users:
 
 ```
+└─$  wpscan --url http://$IP --enumerate u
+_______________________________________________________________
+         __          _______   _____
+         \ \        / /  __ \ / ____|
+          \ \  /\  / /| |__) | (___   ___  __ _ _ __ ®
+           \ \/  \/ / |  ___/ \___ \ / __|/ _` | '_ \
+            \  /\  /  | |     ____) | (__| (_| | | | |
+             \/  \/   |_|    |_____/ \___|\__,_|_| |_|
+
+         WordPress Security Scanner by the WPScan Team
+                         Version 3.8.27
+       Sponsored by Automattic - https://automattic.com/
+       @_WPScan_, @ethicalhack3r, @erwan_lr, @firefart
+_______________________________________________________________
+
+[+] URL: http://10.10.57.77/ [10.10.57.77]
+[+] Started: Fri Oct  4 15:36:28 2024
+
+Interesting Finding(s):
+
+[+] Headers
+ | Interesting Entry: Server: Apache/2.4.29 (Ubuntu)
+ | Found By: Headers (Passive Detection)
+ | Confidence: 100%
+
+[+] robots.txt found: http://10.10.57.77/robots.txt
+ | Interesting Entries:
+ |  - /wp-admin/
+ |  - /wp-admin/admin-ajax.php
+ | Found By: Robots Txt (Aggressive Detection)
+ | Confidence: 100%
+
+[+] XML-RPC seems to be enabled: http://10.10.57.77/xmlrpc.php
+ | Found By: Direct Access (Aggressive Detection)
+ | Confidence: 100%
+ | References:
+ |  - http://codex.wordpress.org/XML-RPC_Pingback_API
+ |  - https://www.rapid7.com/db/modules/auxiliary/scanner/http/wordpress_ghost_scanner/
+ |  - https://www.rapid7.com/db/modules/auxiliary/dos/http/wordpress_xmlrpc_dos/
+ |  - https://www.rapid7.com/db/modules/auxiliary/scanner/http/wordpress_xmlrpc_login/
+ |  - https://www.rapid7.com/db/modules/auxiliary/scanner/http/wordpress_pingback_access/
+
+[+] WordPress readme found: http://10.10.57.77/readme.html
+ | Found By: Direct Access (Aggressive Detection)
+ | Confidence: 100%
+
+[+] Upload directory has listing enabled: http://10.10.57.77/wp-content/uploads/
+ | Found By: Direct Access (Aggressive Detection)
+ | Confidence: 100%
+
+[+] The external WP-Cron seems to be enabled: http://10.10.57.77/wp-cron.php
+ | Found By: Direct Access (Aggressive Detection)
+ | Confidence: 60%
+ | References:
+ |  - https://www.iplocation.net/defend-wordpress-from-ddos
+ |  - https://github.com/wpscanteam/wpscan/issues/1299
+
+[+] WordPress version 5.0 identified (Insecure, released on 2018-12-06).
+ | Found By: Emoji Settings (Passive Detection)
+ |  - http://10.10.57.77/, Match: 'wp-includes\/js\/wp-emoji-release.min.js?ver=5.0'
+ | Confirmed By: Meta Generator (Passive Detection)
+ |  - http://10.10.57.77/, Match: 'WordPress 5.0'
+
+[i] The main theme could not be detected.
+
+[+] Enumerating Users (via Passive and Aggressive Methods)
+ Brute Forcing Author IDs - Time: 00:00:02 <=========================================================================================> (10 / 10) 100.00% Time: 00:00:02
+
+[i] User(s) Identified:
+
+[+] bjoel
+ | Found By: Wp Json Api (Aggressive Detection)
+ |  - http://10.10.57.77/wp-json/wp/v2/users/?per_page=100&page=1
+ | Confirmed By:
+ |  Author Id Brute Forcing - Author Pattern (Aggressive Detection)
+ |  Login Error Messages (Aggressive Detection)
+
+[+] kwheel
+ | Found By: Wp Json Api (Aggressive Detection)
+ |  - http://10.10.57.77/wp-json/wp/v2/users/?per_page=100&page=1
+ | Confirmed By:
+ |  Author Id Brute Forcing - Author Pattern (Aggressive Detection)
+ |  Login Error Messages (Aggressive Detection)
+
+[+] Karen Wheeler
+ | Found By: Rss Generator (Aggressive Detection)
+
+[+] Billy Joel
+ | Found By: Rss Generator (Aggressive Detection)
+
+[!] No WPScan API Token given, as a result vulnerability data has not been output.
+[!] You can get a free API token with 25 daily requests by registering at https://wpscan.com/register
+
+[+] Finished: Fri Oct  4 15:36:49 2024
+[+] Requests Done: 59
+[+] Cached Requests: 5
+[+] Data Sent: 11.558 KB
+[+] Data Received: 271.453 KB
+[+] Memory used: 124.039 MB
+[+] Elapsed time: 00:00:20
 
 ```
+Found two users:
+    - kwheel
+    - bjoel
+
+Cracking WordPress Passwords with Hydra:
+
+
 
 
 
