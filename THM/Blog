@@ -1,9 +1,12 @@
 Creating an environment variable called IP and assigning it the value of the machine.
+
 ```
 $ export IP=10.10.6.219
 ```
 
-Using nmap to discover to determine what service versions are running on open ports and use default scripts to gather additional information:
+**Using Nmap to Identify Service Versions and Gather Additional Information:**
+
+To discover the services running on open ports and gather more information using default scripts, I used the following Nmap command:
 
 ```
 $ nmap -sV -sC $IP
@@ -21,3 +24,29 @@ Service Info: Host: BLOG; OS: Linux; CPE: cpe:/o:linux:linux_kernel
 Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
 Nmap done: 1 IP address (1 host up) scanned in 57.35 seconds
 ```
+**Key Findings:**
+
+    Open Ports: Identified four open ports (22, 80, 139, 445).
+    HTTP Server: Discovered an Apache HTTP server (version 2.4.29) running on port 80.
+    Samba Server: Detected Samba services on ports 139 and 445.
+    SSH Service: Found an OpenSSH service on port 22.
+
+With this information, I determined I decided my next steps to explore the machine are the following
+
+    Directory Enumeration: I used Gobuster to search for hidden directories or files on the web server.
+    Vulnerability Scanning: I ran Nikto to check the Apache server for known vulnerabilities.
+    Share enumeration: I used enum4linux to gather more information about Samba shares and users:
+
+**Directory Enumeration**
+
+```
+enum4linux $IP       
+Starting enum4linux v0.9.1 ( http://labs.portcullis.co.uk/application/enum4linux/ ) on Fri Oct  4 14:32:27 2024
+```
+
+
+
+
+
+
+
