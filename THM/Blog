@@ -87,6 +87,11 @@ smb: \> ls
   check-this.png                      N     3082  Tue May 26 19:13:43 2020
 
 ```
+After checking the .jpg file with steghide found out this was a rabbithole and lead nowhere.
+
+After this decided, to run gobuster against the webserver.
+
+
 
 
 
