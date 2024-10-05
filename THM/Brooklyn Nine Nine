@@ -39,3 +39,9 @@ Service detection performed. Please report any incorrect results at https://nmap
 Nmap done: 1 IP address (1 host up) scanned in 22.70 seconds
 
 ```
+
+Key takeways:
+
+  - FTP server allows for anonymous login and there is an interesting file called note_to_jake.txt
+  - HTTP (Web service) is running Apache 2.4.29 on Ubuntu.
+  - SSH (Secure Shell) is running OpenSSH 7.6p1 on Ubuntu.
