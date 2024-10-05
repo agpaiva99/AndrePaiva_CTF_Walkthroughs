@@ -45,3 +45,66 @@ Key takeways:
   - FTP server allows for anonymous login and there is an interesting file called note_to_jake.txt
   - HTTP (Web service) is running Apache 2.4.29 on Ubuntu.
   - SSH (Secure Shell) is running OpenSSH 7.6p1 on Ubuntu.
+
+
+**Acessing FTP server anonymously**
+
+```
+$ ftp $IP               
+Connected to 10.10.200.49.
+220 (vsFTPd 3.0.3)
+Name (10.10.200.49:<redacted>): anonymous
+331 Please specify the password.
+Password: 
+230 Login successful.
+Remote system type is UNIX.
+Using binary mode to transfer files.
+```
+
+Transfering interesting file to local machine:
+
+```
+ftp> get note_to_jake.txt
+local: note_to_jake.txt remote: note_to_jake.txt
+229 Entering Extended Passive Mode (|||44119|)
+150 Opening BINARY mode data connection for note_to_jake.txt (119 bytes).
+100% |********************************|   119      516.49 KiB/s    00:00 ETA
+226 Transfer complete.
+119 bytes received in 00:00 (0.67 KiB/s)
+```
+```
+$ cat note_to_jake.txt 
+From Amy,
+
+Jake please change your password. It is too weak and holt will be mad if someone hacks into the nine nine
+```
+While the information from these messages is useful, it’s not sufficient, so I decided to explore the website hosted on port 80.
+
+By exploring the website source code, I found the following message:
+
+```
+(...)
+
+<p>This example creates a full page background image. Try to resize the browser window to see how it always will cover the full screen (when scrolled to top), and that it scales nicely on all screen sizes.</p>
+<!-- Have you ever heard of steganography? -->
+</body>
+
+(...)
+```
+
+Based on these clues, I decided my next step would be to download the only image on the website and use steghide to analyze it for hidden data.
+
+**Using steghide and stegcracker to reveal hidden information**
+
+```
+# steghide extract -sf /home/<redacted>/Downloads/brooklyn99.jpg
+Enter passphrase: 
+```
+The file is protected with a passphrase, so I’ll use stegcracker to brute force the password and extract the hidden data.
+```
+
+```
+
+```
+
+
