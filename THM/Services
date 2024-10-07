@@ -1,1 +1,100 @@
+THM CTF - Services WriteUp
+
+Creating an enviornment variable with the ip address of the target server.
+
+```
+$ export IP=10.10.14.31
+```
+
+**Using Nmap to Identify Service Versions and Gather Additional Information:**
+
+To discover the services running on open ports and gather more information using default scripts, I used the following Nmap command:
+
+```
+$ nmap -sC -sV $IP
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2024-10-07 20:18 BST
+Nmap scan report for 10.10.14.31
+Host is up (0.15s latency).
+Not shown: 987 closed tcp ports (conn-refused)
+PORT     STATE SERVICE       VERSION
+53/tcp   open  domain        Simple DNS Plus
+80/tcp   open  http          Microsoft IIS httpd 10.0
+|_http-server-header: Microsoft-IIS/10.0
+|_http-title: Above Services
+| http-methods: 
+|_  Potentially risky methods: TRACE
+88/tcp   open  kerberos-sec  Microsoft Windows Kerberos (server time: 2024-10-07 19:18:25Z)
+135/tcp  open  msrpc         Microsoft Windows RPC
+139/tcp  open  netbios-ssn   Microsoft Windows netbios-ssn
+389/tcp  open  ldap          Microsoft Windows Active Directory LDAP (Domain: services.local0., Site: Default-First-Site-Name)
+445/tcp  open  microsoft-ds?
+464/tcp  open  kpasswd5?
+593/tcp  open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+636/tcp  open  tcpwrapped
+3268/tcp open  ldap          Microsoft Windows Active Directory LDAP (Domain: services.local0., Site: Default-First-Site-Name)
+3269/tcp open  tcpwrapped
+3389/tcp open  ms-wbt-server Microsoft Terminal Services
+| rdp-ntlm-info: 
+|   Target_Name: SERVICES
+|   NetBIOS_Domain_Name: SERVICES
+|   NetBIOS_Computer_Name: WIN-SERVICES
+|   DNS_Domain_Name: services.local
+|   DNS_Computer_Name: WIN-SERVICES.services.local
+|   Product_Version: 10.0.17763
+|_  System_Time: 2024-10-07T19:18:38+00:00
+|_ssl-date: 2024-10-07T19:18:46+00:00; -1s from scanner time.
+| ssl-cert: Subject: commonName=WIN-SERVICES.services.local
+| Not valid before: 2024-10-06T19:10:59
+|_Not valid after:  2025-04-07T19:10:59
+Service Info: Host: WIN-SERVICES; OS: Windows; CPE: cpe:/o:microsoft:windows
+
+Host script results:
+| smb2-time: 
+|   date: 2024-10-07T19:18:41
+|_  start_date: N/A
+| smb2-security-mode: 
+|   3:1:1: 
+|_    Message signing enabled and required
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 40.47 seconds                                                                                                                                                                  
+```
+
+**Key Findings:**
+
+    53/tcp (DNS - Simple DNS Plus): DNS service may be vulnerable to zone transfer attacks.
+    80/tcp (HTTP - Microsoft IIS 10.0): IIS web service with TRACE method enabled, posing a potential XST risk.
+    88/tcp (Kerberos): Kerberos service running, possibly exploitable for attacks like Kerberoasting.
+    135/tcp (MSRPC): Microsoft RPC service, often vulnerable to remote management attacks.
+    139/tcp (NetBIOS-SSN): NetBIOS for file sharing; may expose resources if misconfigured.
+    389/tcp (LDAP): Exposed LDAP service could allow Active Directory enumeration.
+    445/tcp (SMB - Microsoft-ds): SMB may be vulnerable to share enumeration or other attacks.
+    464/tcp (kpasswd5): Kerberos password change service, linked to Active Directory.
+    593/tcp (RPC over HTTP): Used for remote administration, potentially vulnerable.
+    3268/tcp & 3269/tcp (LDAP - Global Catalog): Global Catalog for querying across AD domains.
+    3389/tcp (RDP): RDP service may be exploited for remote access via weak credentials or known vulnerabilities.
+
+After searching the website for information, came across the contact from that gave me an ideia of how the emails of users are 
+constructed: <firstLetterOfFirstName>.<lastname>@services.local
+
+With these information I was able to get the users of all the members of staff displayed in the website following the format above.
+
+    1. j.rock for Joanne Doe
+    2. j.rock for Jack Rock
+    3. w.masters for Will Masters
+    4. j.larusso for Johnny LaRusso
+
+Next step is to use Kerbrute to see if these are valid credentials.
+
+```
+
+```
+
+
+
+
+
+
+
+
 
