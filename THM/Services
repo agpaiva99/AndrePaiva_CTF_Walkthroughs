@@ -199,6 +199,17 @@ THM{ASr3p_R0aSt1n6}
 
 ```
 
+**Privilege Escalation**
+
+To check for privilege escalation oportunities, I ran the following command:
+
+```
+$ whoami /all
+
+
+```
+
+
 
 
 
