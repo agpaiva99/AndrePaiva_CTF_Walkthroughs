@@ -1,1 +1,150 @@
+TRYHACKME Bypass Room Write Up
+
+**Initial Port and Service Enumeration**
+
+```
+sudo nmap -sV -sC cctv.thm 
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2024-10-16 20:07 BST
+Nmap scan report for cctv.thm (10.10.168.148)
+Host is up (0.18s latency).
+Not shown: 997 filtered tcp ports (no-response)
+PORT    STATE SERVICE  VERSION
+22/tcp  open  ssh      OpenSSH 8.2p1 Ubuntu 4ubuntu0.9 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   3072 f7:17:2b:52:16:a8:41:0d:fe:be:59:66:81:40:5d:c2 (RSA)
+|   256 0a:0e:d8:cc:0d:9e:ed:7f:16:c3:0a:5b:f4:60:92:10 (ECDSA)
+|_  256 35:a2:df:9c:5a:99:42:da:2e:66:a6:0f:d4:0f:4d:da (ED25519)
+80/tcp  open  http     Apache httpd 2.4.41
+|_http-title: 403 Forbidden
+|_http-server-header: Apache/2.4.41 (Ubuntu)
+443/tcp open  ssl/http Apache httpd 2.4.41
+|_http-title: 403 Forbidden
+|_ssl-date: TLS randomness does not represent time
+| tls-alpn: 
+|_  http/1.1
+|_http-server-header: Apache/2.4.41 (Ubuntu)
+| ssl-cert: Subject: commonName=cctv.thm/organizationName=cctv.thm/stateOrProvinceName=Tokyo/countryName=AU
+| Not valid before: 2023-08-30T10:08:16
+|_Not valid after:  2024-08-29T10:08:16
+Service Info: Hosts: default, ip-10-10-168-148.eu-west-1.compute.internal; OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 79.69 seconds
+
+```
+
+To start, I used ffuf to enumerate directories on the target site. 
+However, this approach proved ineffective due to the overwhelming number of directories discovered, which did not provide any meaningful leads.
+
+Upon visiting the cctv.thm website, I encountered a login page that required a password. 
+I inspected the page's HTML and found the following note:
+
+Here we will add redirection to /mail endpoint
+
+This hinted at a potentially useful endpoint, /mail.
+
+I navigated to the /mail directory and found an interesting file: https://cctv.thm/mail/dump.txt. The file contained an email conversation between two users, Steve and Mark. 
+The email included instructions on how to retrieve a password through a series of crafted network requests:
+
+
+´´´
+From: steve@cctv.thm
+To: mark@cctv.thm
+Subject: Important Credentials
+
+Hey Mark,
+
+I have completed all the formalities for securing our CCTV web panel (cctv.thm:443). I have installed Suricata to automatically detect any invalid connection and enabled two-layer protection for the web panel. I will SMS you the passwords but incase if you misplace them, there is no possibility for recovery. 
+
+We can recover the password only if we send some specially crafted packets 	
+-	Make a UDP request to the machine with source port number 5000. Once done, you can fetch the flag through /fpassword.php?id=1
+-	Make a TCP request to fpassword.php?id=2 with user-agent set as "I am Steve Friend". Once done, you can fetch the flag through /fpassword.php?id=2
+-	Send a ping packet to the machine appearing as Mozilla browser (Hint: packet content with user agent set as Mozilla). Once done, you can fetch the flag through /fpassword.php?id=3
+-	Attempt to login to the FTP server with content containing the word "user" in it. Once done, you can fetch the flag from /fpassword.php?id=4
+-	Send TCP request to flagger.cgi endpoint with a host header containing more than 50 characters. Once done, you can fetch the flag from /fpassword.php?id=5
+
+After receiving all the flags, you can visit the MACHINE IP that will ask you for the password. The first password will be concatenated values of all five flags you have received above.
+
+For the second layer of security, I have enabled a wholly sandboxed login environment with no connection to the database and no possibility of command execution. The username is the computer's hostname, and the password is the same as the previous password. I will SMS you the details as well.
+
+
+See ya soon
+
+Steve
+Dev Ops Engineer
+```
+
+**Retrieving the Flags**
+
+1. Sent the UDP request to the machine with source port 5000 and retrieved the first flag.
+Used the following command:
+```
+$ sudo hping3 -2 -p 443 -s 5000 -c 1 cctv.thm
+
+HPING cctv.thm (tun0 10.10.168.148): udp mode set, 28 headers + 0 data bytes
+ICMP Port Unreachable from ip=10.10.168.148 name=cctv.thm  
+status=0 port=5000 seq=0
+
+--- cctv.thm hping statistic ---
+1 packets transmitted, 1 packets received, 0% packet loss
+round-trip min/avg/max = 207.8/207.8/207.8 ms
+
+```
+
+
+2. Sent the TCP request to /fpassword.php?id=2 with the specified user-agent to get the second flag.
+Used the following command:
+```
+curl -A "I am Steve Friend" cctv.thm        
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<html><head>
+<title>403 Forbidden</title>
+</head><body>
+<h1>Forbidden</h1>
+<p>You don't have permission to access this resource.</p>
+<hr>
+<address>Apache/2.4.41 (Ubuntu) Server at cctv.thm Port 80</address>
+</body></html>
+
+```
+
+
+3. Crafted a ping packet with the Mozilla user-agent to obtain the third flag.
+Using the developer tools of my browser I found my own useragent then ued the following command:
+```
+sudo nping -icmp -data-string ‘"Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0"’ cctv.thm
+[sudo] password for andrepaiva: 
+
+Starting Nping 0.7.94SVN ( https://nmap.org/nping ) at 2024-10-16 20:40 BST
+SENT (0.0244s) ICMP [10.11.106.26 > 10.10.168.148 Echo request (type=8/code=0) id=8541 seq=1] IP [ttl=64 id=49935 iplen=104 ]
+RCVD (0.2229s) ICMP [10.10.168.148 > 10.11.106.26 Echo reply (type=0/code=0) id=8541 seq=1] IP [ttl=63 id=33356 iplen=104 ]
+SENT (1.0251s) ICMP [10.11.106.26 > 10.10.168.148 Echo request (type=8/code=0) id=8541 seq=2] IP [ttl=64 id=49935 iplen=104 ]
+RCVD (1.3636s) ICMP [10.10.168.148 > 10.11.106.26 Echo reply (type=0/code=0) id=8541 seq=2] IP [ttl=63 id=33479 iplen=104 ]
+SENT (2.0257s) ICMP [10.11.106.26 > 10.10.168.148 Echo request (type=8/code=0) id=8541 seq=3] IP [ttl=64 id=49935 iplen=104 ]
+RCVD (2.0845s) ICMP [10.10.168.148 > 10.11.106.26 Echo reply (type=0/code=0) id=8541 seq=3] IP [ttl=63 id=33491 iplen=104 ]
+SENT (3.0269s) ICMP [10.11.106.26 > 10.10.168.148 Echo request (type=8/code=0) id=8541 seq=4] IP [ttl=64 id=49935 iplen=104 ]
+RCVD (3.2970s) ICMP [10.10.168.148 > 10.11.106.26 Echo reply (type=0/code=0) id=8541 seq=4] IP [ttl=63 id=33697 iplen=104 ]
+SENT (4.0272s) ICMP [10.11.106.26 > 10.10.168.148 Echo request (type=8/code=0) id=8541 seq=5] IP [ttl=64 id=49935 iplen=104 ]
+RCVD (4.2866s) ICMP [10.10.168.148 > 10.11.106.26 Echo reply (type=0/code=0) id=8541 seq=5] IP [ttl=63 id=33901 iplen=104 ]
+ 
+Max rtt: 338.385ms | Min rtt: 58.743ms | Avg rtt: 225.008ms
+Raw packets sent: 5 (520B) | Rcvd: 5 (520B) | Lost: 0 (0.00%)
+Nping done: 1 IP address pinged in 4.34 seconds
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
