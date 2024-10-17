@@ -161,12 +161,11 @@ Content-Type: text/html; charset=iso-8859-1
 
 ```
 
+After having all flags, the password is the concantenated values of all flags.
 
+I was then greeted by a following page, which contains a direct system command.
 
-
-
-
-
+By analyzing the source code
 
 
 
