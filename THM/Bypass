@@ -190,7 +190,7 @@ $ nc -lvp 4444
 
 ```
 
-Trigger the Exploit: Finally, I activated the payload by selecting the newly added option from the dropdown menu. This resulted in a successful remote shell connection.
+Finally, I activated the payload by selecting the newly added option from the dropdown menu. This resulted in a successful remote shell connection.
 
 ```
 nc -lvp 4444 
