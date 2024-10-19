@@ -1,1 +1,74 @@
+TRYHACKME BInjectics Room Write Up
+
+This exercise demonstrates how I leveraged various injection techniques to exploit and take control of a web application
+
+**Reconnaissance**
+
+```
+nmap -sC -sV $IP
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2024-10-19 10:01 BST
+Nmap scan report for 10.10.208.27
+Host is up (0.050s latency).
+Not shown: 998 closed tcp ports (conn-refused)
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.11 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   3072 22:6e:52:07:d4:40:75:9a:2d:6c:ba:19:3a:99:81:df (RSA)
+|   256 3a:1a:95:bd:ae:af:4b:9c:40:cd:db:46:4a:d0:93:48 (ECDSA)
+|_  256 b7:79:d1:6d:07:50:e5:6d:1d:66:25:61:fd:41:a1:aa (ED25519)
+80/tcp open  http    Apache httpd 2.4.41 ((Ubuntu))
+|_http-title: Injectics Leaderboard
+| http-cookie-flags: 
+|   /: 
+|     PHPSESSID: 
+|_      httponly flag not set
+|_http-server-header: Apache/2.4.41 (Ubuntu)
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 12.54 seconds
+
+```
+
+After browsing the website at hosted on port 80.
+
+I found the two loging page located at:
+  - 10.10.227.131/login.php
+  - 10.10.227.131/adminLogin007.php
+
+
+Viewing the page source, I noticed the following comentary:
+
+```
+<!-- Mails are stored in mail.log file-->
+    <!-- Bootstrap JS and dependencies -->
+    <script src="/js/slim.min.js"></script>
+    <script src="/js/popper.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+</body>
+</html>
+```
+After visiting the /mail.log page, I found two emails and there passwords.
+
+```
+( ... )
+
+Here are the default credentials that will be added:
+
+| Email                     | Password 	              |
+|---------------------------|-------------------------|
+| superadmin@injectics.thm  | superSecurePasswd101    |
+| dev@injectics.thm         | devPasswd123            |
+
+( ... )
+
+```
+
+
+
+
+
+
+
+
 
