@@ -125,6 +125,15 @@ I got the following message
 'Seems like database or some important table is deleted. InjecticsService is running to restore it. Please wait for 1-2 minutes.'
 
 
+Next I sign back in through the Admin login page using the credentials found from /mail.log.
+
+And got access to the first flag.
+
+THM{INJECTICS_ADMIN_PANEL_007}
+
+
+
+
 
 
 
